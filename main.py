@@ -27,6 +27,15 @@ fig.update_layout(title='Candlestick Chart',
 window = 30
 moving_average = data['Close'].rolling(window=window).mean()
 
+# Creating dropdown options
+dropdown_options = [
+    {'label': 'Facebook', 'value': 'FB'},
+    {'label': 'Apple', 'value': 'AAPL'},
+    {'label': 'Amazon', 'value': 'AMZN'},
+    {'label': 'Netflix', 'value': 'NFLX'},
+    {'label': 'Google', 'value': 'GOOGL'}
+]
+
 # Main app 
 app = Dash(__name__)
 app.layout = html.Div(
@@ -39,13 +48,31 @@ app.layout = html.Div(
             ),
         ),
 
-        dcc.DatePickerRange(
-            id='date-range-picker',
-            min_date_allowed=data["Date"].min().date(),
-            max_date_allowed=data["Date"].max().date(),
-            start_date=data["Date"].min().date(),
-            end_date=data["Date"].max().date(),
-        ),
+        html.Div([
+            html.H1(children="Preference settings"),
+            html.P(
+                children=(
+                    "Pick the date interval"
+                )
+            ),
+            dcc.DatePickerRange(
+                id='date-range-picker',
+                min_date_allowed=data["Date"].min().date(),
+                max_date_allowed=data["Date"].max().date(),
+                start_date=data["Date"].min().date(),
+                end_date=data["Date"].max().date(),
+            ),
+            html.P(
+                children=(
+                    "Pick the company"
+                )
+            ),
+            dcc.Dropdown(
+                id = 'company-picker',
+                options = dropdown_options,
+                value = company,
+            )
+        ]),
 
         dcc.Graph(
             id = "line-graph",
@@ -97,12 +124,11 @@ app.layout = html.Div(
     [Output('line-graph', 'figure'),
     Output('candlestick-chart', 'figure'),
     Output('moving-closing-average', 'figure')],
-    [Input('date-range-picker', 'start_date'),
+    [Input('company-picker', 'value'),
+    Input('date-range-picker', 'start_date'),
     Input('date-range-picker', 'end_date')]
 )
-def update_figure(start_date, end_date):
-    # company = 'FB'
-
+def update_figure(company, start_date, end_date):
     # Get dataset
     data = Data(company, start_date, end_date).getModifedDataset()
 
